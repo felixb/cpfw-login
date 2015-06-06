@@ -2,6 +2,11 @@
 
 Command line agent for checkpoint firewall authentication
 
+# Install
+
+Download the [latest release](https://github.com/felixb/cpfw-login/releases/latest).
+Make sure to pick the right OS.
+
 # Usage
 
 Run the agent on your command line like this:
