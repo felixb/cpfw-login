@@ -21,8 +21,6 @@ The following parameters are available:
  * **-check // CPFW_AUTH_CHECK_URL** optional: any http url, used for checking before and after login. should be behind your firewall.
  * **-interval** optional: recheck/relogin every X seconds
 
-The agent fails/dies on any unexpected error.
-
 # Build
 
     go build

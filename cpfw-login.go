@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -100,80 +101,85 @@ func prelogin(client *http.Client, uri string) (*LoginParams, error) {
 	return lp, nil
 }
 
-func login(client *http.Client, uri, user, password string, params *LoginParams) *LoginResponse {
+func login(client *http.Client, uri, user, password string, params *LoginParams) (*LoginResponse, error) {
 	crypted_password, err := encrypt(rand.Reader, *params, password)
 	if err != nil {
 		log.Printf("Error encrypting password: %v", err)
-		os.Exit(1)
+		return nil, err
 	}
 
 	response, err := sendPassword(client, uri, user, crypted_password)
 	if err != nil {
 		log.Printf("Error sending login data: %v", err)
-		os.Exit(1)
+		return nil, err
 	}
 
 	if response.Type == auth_fail {
 		log.Print("Invalid username/password")
-		os.Exit(1)
+		return nil, err
 	}
 	if response.Type != success {
 		log.Printf("Error logging in: %s", response)
-		os.Exit(1)
+		return nil, err
 	}
 	log.Printf("Logged in as %s", user)
-	return &response
+	return &response, nil
 }
 
-func postlogin(client *http.Client, uri string) *Attributes {
+func postlogin(client *http.Client, uri string) (*Attributes, error) {
 	_, err := fetch(client, uri, "/connect/GetStateAndView")
 	if err != nil {
 		log.Printf("Error loading post login page: %v", err)
-		os.Exit(1)
+		return nil, err
 	}
 	_, err = fetch(client, uri, "/connect/css/Final")
 	if err != nil {
 		log.Printf("Error loading final page: %v", err)
-		os.Exit(1)
+		return nil, err
 	}
 
 	attr, err := fetchAttributes(client, uri)
 	if err != nil {
 		log.Printf("Error loading attributes: %v", err)
-		os.Exit(1)
+		return nil, err
 	}
-	return attr
+	return attr, nil
 }
 
-func check_connection(client *http.Client, uri string) bool {
+func check_connection(client *http.Client, uri string) error {
 	_, err := fetch(client, uri, "")
 	if err != nil {
 		log.Printf("Unable to reach %s: %v", uri, err)
-		return false
+		return err
 	}
 	log.Printf("Reached %s sucessfully", uri)
-	return true
+	return nil
 }
 
 func run(client *http.Client, uri, user, password, check string) error {
-	if len(check) == 0 || !check_connection(client, check) {
+	if len(check) == 0 || check_connection(client, check) != nil {
 		lp, err := prelogin(client, uri)
 		if err != nil {
 			return err
 		}
-
-		login(client, uri, user, password, lp)
-		postlogin(client, uri)
-		attr := postlogin(client, uri)
+		_, err = login(client, uri, user, password, lp)
+		if err != nil {
+			log.Printf("Login failed: %v", err)
+			return err
+		}
+		attr, err := postlogin(client, uri)
+		if err != nil {
+			log.Printf("Post login failed: %v", err)
+			return err
+		}
 		if attr.TimeToEndOfSession > 0 {
 			log.Printf("End of session: %s", attr.TextToEndOfSession)
 		} else {
-			log.Printf("Session setup failed: %v", attr)
-			os.Exit(1)
+			return errors.New(fmt.Sprintf("Session setup failed: %v", attr))
 		}
 
 		if len(check) > 0 {
-			check_connection(client, check)
+			return check_connection(client, check)
 		}
 	}
 	return nil
@@ -200,9 +206,13 @@ func main() {
 
 	client := httpClient(uri, user)
 	for {
-		run(client, uri, user, password, check_url)
+		err := run(client, uri, user, password, check_url)
 		if interval <= 0 {
 			// exit loop when not looping
+			if err != nil {
+				log.Printf("unexpected error: %v", err)
+				os.Exit(1)
+			}
 			break
 		}
 		time.Sleep(time.Duration(interval) * time.Second)
