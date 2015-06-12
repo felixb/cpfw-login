@@ -191,11 +191,13 @@ func main() {
 	var password string
 	var check_url string
 	var interval uint
+	var insecure bool
 	flag.StringVar(&uri, "url", os.Getenv("CPFW_AUTH_URL"), "login form base url, also: CPFW_AUTH_URL")
 	flag.StringVar(&user, "user", os.Getenv("CPFW_AUTH_USER"), "login username, also: CPFW_AUTH_USER")
 	flag.StringVar(&password, "password", os.Getenv("CPFW_AUTH_PASSWORD"), "login password, also: CPFW_AUTH_PASSWORD")
 	flag.StringVar(&check_url, "check", os.Getenv("CPFW_AUTH_CHECK_URL"), "check url for successful login, also: CPFW_AUTH_CHECK_URL")
 	flag.UintVar(&interval, "interval", 0, "recheck connection every Xs")
+	flag.BoolVar(&insecure, "insecure", false, "don't verify SSL/TLS connecrtions")
 	flag.Parse()
 
 	if len(uri) == 0 {
@@ -204,7 +206,7 @@ func main() {
 	}
 	log.Printf("Connecting to: %s", uri)
 
-	client := httpClient(uri, user)
+	client := httpClient(uri, user, insecure)
 	for {
 		err := run(client, uri, user, password, check_url)
 		if interval <= 0 {

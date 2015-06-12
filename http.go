@@ -26,9 +26,9 @@ func initCookies(uri, user string) *cookiejar.Jar {
 }
 
 // get a common http client
-func httpClient(uri, user string) *http.Client {
+func httpClient(uri, user string, insecure bool) *http.Client {
 	jar := initCookies(uri, user)
-	tr := &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}
+	tr := &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: insecure}}
 	return &http.Client{Transport: tr, Jar: jar, Timeout: 5 * time.Second}
 }
 
