@@ -84,7 +84,7 @@ func fetchAttributes(client *http.Client, uri string) (*Attributes, error) {
 }
 
 // send encrypted password to server
-func sendPassword(client *http.Client, uri, user, password string) (LoginResponse, error) {
+func sendPassword(client *http.Client, uri, user, password string) (*LoginResponse, error) {
 	data := url.Values{}
 	data.Set("realm", "passwordRealm")
 	data.Set("username", user)
@@ -94,20 +94,20 @@ func sendPassword(client *http.Client, uri, user, password string) (LoginRespons
 	b := bytes.NewReader([]byte(data.Encode()))
 	req, err := http.NewRequest("POST", u, b)
 	if err != nil {
-		return LoginResponse{}, err
+		return nil, err
 	}
 	initHeader(req, uri)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	resp, err := client.Do(req)
 	if err != nil {
-		return LoginResponse{}, err
+		return nil, err
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return LoginResponse{}, err
+		return nil, err
 	}
 	var r LoginResponse
 	err = json.Unmarshal(body, &r)
-	return r, err
+	return &r, err
 }

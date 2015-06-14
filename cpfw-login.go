@@ -98,14 +98,14 @@ func login(client *http.Client, uri, user, password string, params *LoginParams)
 		return nil, err
 	}
 	if response.Type != success {
-		log.Printf("Error logging in: %s", response)
+		log.Printf("Error logging in: %s", *response)
 		return nil, err
 	}
 	log.Printf("Logged in as %s", user)
-	return &response, nil
+	return response, nil
 }
 
-func postlogin(client *http.Client, uri string) (*Attributes, error) {
+func postLogin(client *http.Client, uri string) (*Attributes, error) {
 	_, err := fetch(client, uri, "/connect/GetStateAndView")
 	if err != nil {
 		log.Printf("Error loading post login page: %v", err)
@@ -119,7 +119,7 @@ func postlogin(client *http.Client, uri string) (*Attributes, error) {
 	return attr, nil
 }
 
-func check_connection(client *http.Client, uri string) error {
+func checkConnection(client *http.Client, uri string) error {
 	_, err := fetch(client, uri, "")
 	if err != nil {
 		log.Printf("Unable to reach %s: %v", uri, err)
@@ -130,7 +130,7 @@ func check_connection(client *http.Client, uri string) error {
 }
 
 func run(client *http.Client, uri, user, password, check string) error {
-	if len(check) == 0 || check_connection(client, check) != nil {
+	if len(check) == 0 || checkConnection(client, check) != nil {
 		lp, err := fetchLoginParams(client, uri)
 		if err != nil {
 			return err
@@ -140,7 +140,7 @@ func run(client *http.Client, uri, user, password, check string) error {
 			log.Printf("Login failed: %v", err)
 			return err
 		}
-		attr, err := postlogin(client, uri)
+		attr, err := postLogin(client, uri)
 		if err != nil {
 			log.Printf("Post login failed: %v", err)
 			return err
@@ -152,7 +152,7 @@ func run(client *http.Client, uri, user, password, check string) error {
 		}
 
 		if len(check) > 0 {
-			return check_connection(client, check)
+			return checkConnection(client, check)
 		}
 	}
 	return nil
@@ -162,13 +162,13 @@ func main() {
 	var uri string
 	var user string
 	var password string
-	var check_url string
+	var checkUrl string
 	var interval uint
 	var insecure bool
 	flag.StringVar(&uri, "url", os.Getenv("CPFW_AUTH_URL"), "login form base url, also: CPFW_AUTH_URL")
 	flag.StringVar(&user, "user", os.Getenv("CPFW_AUTH_USER"), "login username, also: CPFW_AUTH_USER")
 	flag.StringVar(&password, "password", os.Getenv("CPFW_AUTH_PASSWORD"), "login password, also: CPFW_AUTH_PASSWORD")
-	flag.StringVar(&check_url, "check", os.Getenv("CPFW_AUTH_CHECK_URL"), "check url for successful login, also: CPFW_AUTH_CHECK_URL")
+	flag.StringVar(&checkUrl, "check", os.Getenv("CPFW_AUTH_checkUrl"), "check url for successful login, also: CPFW_AUTH_checkUrl")
 	flag.UintVar(&interval, "interval", 0, "recheck connection every Xs")
 	flag.BoolVar(&insecure, "insecure", false, "don't verify SSL/TLS connections")
 	flag.Parse()
@@ -177,11 +177,19 @@ func main() {
 		log.Println("Missing mandatory parameter: uri")
 		os.Exit(1)
 	}
+	if len(user) == 0 {
+		log.Println("Missing mandatory parameter: user")
+		os.Exit(1)
+	}
+	if len(password) == 0 {
+		log.Println("Missing mandatory parameter: password")
+		os.Exit(1)
+	}
 	log.Printf("Connecting to: %s", uri)
 
 	client := httpClient(uri, user, insecure)
 	for {
-		err := run(client, uri, user, password, check_url)
+		err := run(client, uri, user, password, checkUrl)
 		if interval <= 0 {
 			// exit loop when not looping
 			if err != nil {
