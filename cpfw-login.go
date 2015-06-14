@@ -197,7 +197,7 @@ func main() {
 	flag.StringVar(&password, "password", os.Getenv("CPFW_AUTH_PASSWORD"), "login password, also: CPFW_AUTH_PASSWORD")
 	flag.StringVar(&check_url, "check", os.Getenv("CPFW_AUTH_CHECK_URL"), "check url for successful login, also: CPFW_AUTH_CHECK_URL")
 	flag.UintVar(&interval, "interval", 0, "recheck connection every Xs")
-	flag.BoolVar(&insecure, "insecure", false, "don't verify SSL/TLS connecrtions")
+	flag.BoolVar(&insecure, "insecure", false, "don't verify SSL/TLS connections")
 	flag.Parse()
 
 	if len(uri) == 0 {
