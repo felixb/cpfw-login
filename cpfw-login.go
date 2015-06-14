@@ -80,27 +80,6 @@ func NewLoginParams(params LoginParamsRaw) (*LoginParams, error) {
 	return &LoginParams{rsa.PublicKey{m, int(e)}, params.LoginToken}, nil
 }
 
-func prelogin(client *http.Client, uri string) (*LoginParams, error) {
-	_, err := fetch(client, uri, "/PortalMain")
-	if err != nil {
-		log.Printf("Error loading login page: %v", err)
-		return nil, err
-	}
-	_, err = fetch(client, uri, "/LoginSettings")
-	if err != nil {
-		log.Printf("Error loading login page: %v", err)
-		return nil, err
-	}
-
-	lp, err := fetchLoginParams(client, uri)
-	if err != nil {
-		log.Printf("Error loading login params: %v", err)
-		return nil, err
-	}
-
-	return lp, nil
-}
-
 func login(client *http.Client, uri, user, password string, params *LoginParams) (*LoginResponse, error) {
 	crypted_password, err := encrypt(rand.Reader, *params, password)
 	if err != nil {
@@ -132,12 +111,6 @@ func postlogin(client *http.Client, uri string) (*Attributes, error) {
 		log.Printf("Error loading post login page: %v", err)
 		return nil, err
 	}
-	_, err = fetch(client, uri, "/connect/css/Final")
-	if err != nil {
-		log.Printf("Error loading final page: %v", err)
-		return nil, err
-	}
-
 	attr, err := fetchAttributes(client, uri)
 	if err != nil {
 		log.Printf("Error loading attributes: %v", err)
@@ -158,7 +131,7 @@ func check_connection(client *http.Client, uri string) error {
 
 func run(client *http.Client, uri, user, password, check string) error {
 	if len(check) == 0 || check_connection(client, check) != nil {
-		lp, err := prelogin(client, uri)
+		lp, err := fetchLoginParams(client, uri)
 		if err != nil {
 			return err
 		}
