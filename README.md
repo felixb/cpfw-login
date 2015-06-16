@@ -20,7 +20,7 @@ The following parameters are available:
  * `--password` // `CPFW_AUTH_PASSWORD` required: your password
  * `--check` // `CPFW_AUTH_CHECK_URL` optional: any http url, used for checking before and after login. should be behind your firewall.
  * `--interval` optional: recheck/relogin every X seconds
- * `--insecure` optional: don't verify SSL/TLS connecrtions
+ * `--insecure` optional: don't verify SSL/TLS connections
 
 # Build
 
