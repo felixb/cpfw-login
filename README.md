@@ -24,7 +24,11 @@ The following parameters are available:
 
 # Build
 
-    go build
+    make
+
+# Test
+
+    make test
 
 # Contributing
 

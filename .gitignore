@@ -23,4 +23,6 @@ _testmain.go
 *.test
 *.prof
 
+.get-deps
 cpfw-login
+cpfw-login_*
