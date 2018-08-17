@@ -89,7 +89,7 @@ func login(client *http.Client, uri, user, password string, params *LoginParams)
 
 	response, err := sendPassword(client, uri, user, crypted_password)
 	if err != nil {
-		log.Printf("Error sending login data: %v", err)
+		log.Printf("Error sending login data: %+v", err)
 		return nil, err
 	}
 
@@ -98,7 +98,7 @@ func login(client *http.Client, uri, user, password string, params *LoginParams)
 		return nil, err
 	}
 	if response.Type != success {
-		log.Printf("Error logging in: %s", *response)
+		log.Printf("Error logging in: %v", *response)
 		return nil, err
 	}
 	log.Printf("Logged in as %s", user)
