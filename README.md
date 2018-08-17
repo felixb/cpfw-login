@@ -24,6 +24,7 @@ The following parameters are available:
 
 # Build
 
+    dep ensure
     go build
 
 # Contributing
