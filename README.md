@@ -11,7 +11,7 @@ Make sure to pick the right OS.
 
 Run the agent on your command line like this:
 
-    ./cpfw-login --url <cp fw url> --user <username> --password <password>
+    ./cpfw-login --url <cp fw url> --user <username> --password <password> [--passwordprompt]
 
 The following parameters are available:
 
@@ -21,6 +21,7 @@ The following parameters are available:
  * `--check` // `CPFW_AUTH_CHECK_URL` optional: any http url, used for checking before and after login. should be behind your firewall.
  * `--interval` optional: recheck/relogin every X seconds
  * `--insecure` optional: don't verify SSL/TLS connections
+ * `--passwordprompt` optional: show a prompt for the password. It ignores the password parameter.
 
 # Build
 
