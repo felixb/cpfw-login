@@ -13,6 +13,8 @@ import (
 	"os"
 	"strconv"
 	"time"
+	"golang.org/x/crypto/ssh/terminal"
+	"syscall"
 )
 
 const (
@@ -89,7 +91,7 @@ func login(client *http.Client, uri, user, password string, params *LoginParams)
 
 	response, err := sendPassword(client, uri, user, crypted_password)
 	if err != nil {
-		log.Printf("Error sending login data: %v", err)
+		log.Printf("Error sending login data: %+v", err)
 		return nil, err
 	}
 
@@ -98,7 +100,7 @@ func login(client *http.Client, uri, user, password string, params *LoginParams)
 		return nil, err
 	}
 	if response.Type != success {
-		log.Printf("Error logging in: %s", *response)
+		log.Printf("Error logging in: %v", *response)
 		return nil, err
 	}
 	log.Printf("Logged in as %s", user)
@@ -158,6 +160,16 @@ func run(client *http.Client, uri, user, password, check string) error {
 	return nil
 }
 
+func readPasswordFromPrompt()(string)  {
+
+	fmt.Print("Enter Password: ")
+	bytePassword, err := terminal.ReadPassword(int(syscall.Stdin))
+	if err != nil {
+		fmt.Println("\nPassword typed: " + string(bytePassword))
+	}
+	return string(bytePassword)
+}
+
 func main() {
 	var uri string
 	var user string
@@ -165,12 +177,14 @@ func main() {
 	var checkUrl string
 	var interval uint
 	var insecure bool
+	var passwordPrompt bool
 	flag.StringVar(&uri, "url", os.Getenv("CPFW_AUTH_URL"), "login form base url, also: CPFW_AUTH_URL")
 	flag.StringVar(&user, "user", os.Getenv("CPFW_AUTH_USER"), "login username, also: CPFW_AUTH_USER")
 	flag.StringVar(&password, "password", os.Getenv("CPFW_AUTH_PASSWORD"), "login password, also: CPFW_AUTH_PASSWORD")
 	flag.StringVar(&checkUrl, "check", os.Getenv("CPFW_AUTH_CHECK_URL"), "check url for successful login, also: CPFW_AUTH_CHECK_URL")
 	flag.UintVar(&interval, "interval", 0, "recheck connection every Xs")
 	flag.BoolVar(&insecure, "insecure", false, "don't verify SSL/TLS connections")
+	flag.BoolVar(&passwordPrompt, "passwordprompt", false, "show a prompt for the password. It ignores the password parameter.")
 	flag.Parse()
 
 	if len(uri) == 0 {
@@ -180,6 +194,9 @@ func main() {
 	if len(user) == 0 {
 		log.Println("Missing mandatory parameter: user")
 		os.Exit(1)
+	}
+	if passwordPrompt == true {
+		password = readPasswordFromPrompt()
 	}
 	if len(password) == 0 {
 		log.Println("Missing mandatory parameter: password")
