@@ -18,8 +18,8 @@ func initCookies(uri, user string) *cookiejar.Jar {
 	cookies := make([]*http.Cookie, 2)
 	t := time.Now()
 	t = t.Add(5 * time.Hour)
-	cookies[0] = &http.Cookie{"cpnacportal_login_type", "password", "/", u.Host, t, "", 0, true, false, "password", []string{"password"}}
-	cookies[1] = &http.Cookie{"cpnacportal_username", user, "/", u.Host, t, "", 0, true, false, "password", []string{user}}
+	cookies[0] = &http.Cookie{"cpnacportal_login_type", "password", "/", u.Host, t, "", 0, true, false, http.SameSiteLaxMode, "password", []string{"password"}}
+	cookies[1] = &http.Cookie{"cpnacportal_username", user, "/", u.Host, t, "", 0, true, false, http.SameSiteLaxMode, "password", []string{user}}
 	// log.Printf("cookies: %v", cookies)
 	jar.SetCookies(u, cookies)
 	return jar
