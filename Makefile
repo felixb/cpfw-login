@@ -22,4 +22,4 @@ cpfw-login_darwin: .get-deps *.go
 	GOOS=darwin go build -o $@ .
 
 cpfw-login_amd64_windows: .get-deps *.go
-	 GOOS=windows GOARCH=amd64 go build -o $@ .
+	 GOOS=windows GOARCH=amd64 go build -o cpfw-login.exe .
